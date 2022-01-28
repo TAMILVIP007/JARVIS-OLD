@@ -10,11 +10,7 @@ from telegram import ParseMode, Update
 from telegram.ext import (CallbackContext, CommandHandler, Filters,
                           MessageHandler, run_async)
 
-if ALLOW_EXCL:
-    CMD_STARTERS = ('/', '!')
-else:
-    CMD_STARTERS = ('/')
-
+CMD_STARTERS = ('/', '!') if ALLOW_EXCL else '/'
 BLUE_TEXT_CLEAN_GROUP = 13
 CommandHandlerList = (CommandHandler, CustomCommandHandler,
                       DisableAbleCommandHandler)
@@ -37,22 +33,20 @@ def clean_blue_text_must_click(update: Update, context: CallbackContext):
     bot = context.bot
     chat = update.effective_chat
     message = update.effective_message
-    if chat.get_member(bot.id).can_delete_messages:
-        if sql.is_enabled(chat.id):
-            fst_word = message.text.strip().split(None, 1)[0]
+    if chat.get_member(bot.id).can_delete_messages and sql.is_enabled(chat.id):
+        fst_word = message.text.strip().split(None, 1)[0]
 
-            if len(fst_word) > 1 and any(
+        if len(fst_word) > 1 and any(
                     fst_word.startswith(start) for start in CMD_STARTERS):
 
-                command = fst_word[1:].split('@')
-                chat = update.effective_chat
+            command = fst_word[1:].split('@')
+            chat = update.effective_chat
 
-                ignored = sql.is_command_ignored(chat.id, command[0])
-                if ignored:
-                    return
+            if ignored := sql.is_command_ignored(chat.id, command[0]):
+                return
 
-                if command[0] not in command_list:
-                    message.delete()
+            if command[0] not in command_list:
+                message.delete()
 
 
 @run_async
@@ -82,10 +76,7 @@ def set_blue_text_must_click(update: Update, context: CallbackContext):
             message.reply_text(reply)
     else:
         clean_status = sql.is_enabled(chat.id)
-        if clean_status:
-            clean_status = "Enabled"
-        else:
-            clean_status = "Disabled"
+        clean_status = "Enabled" if clean_status else "Disabled"
         reply = "Bluetext cleaning for <b>{}</b> : <b>{}</b>".format(
             html.escape(chat.title), clean_status)
         message.reply_text(reply, parse_mode=ParseMode.HTML)
@@ -99,8 +90,7 @@ def add_bluetext_ignore(update: Update, context: CallbackContext):
     args = context.args
     if len(args) >= 1:
         val = args[0].lower()
-        added = sql.chat_ignore_command(chat.id, val)
-        if added:
+        if added := sql.chat_ignore_command(chat.id, val):
             reply = "<b>{}</b> has been added to bluetext cleaner ignore list.".format(
                 args[0])
         else:
@@ -120,8 +110,7 @@ def remove_bluetext_ignore(update: Update, context: CallbackContext):
     args = context.args
     if len(args) >= 1:
         val = args[0].lower()
-        removed = sql.chat_unignore_command(chat.id, val)
-        if removed:
+        if removed := sql.chat_unignore_command(chat.id, val):
             reply = "<b>{}</b> has been removed from bluetext cleaner ignore list.".format(
                 args[0])
         else:
@@ -140,8 +129,7 @@ def add_bluetext_ignore_global(update: Update, context: CallbackContext):
     args = context.args
     if len(args) >= 1:
         val = args[0].lower()
-        added = sql.global_ignore_command(val)
-        if added:
+        if added := sql.global_ignore_command(val):
             reply = "<b>{}</b> has been added to global bluetext cleaner ignore list.".format(
                 args[0])
         else:
@@ -160,8 +148,7 @@ def remove_bluetext_ignore_global(update: Update, context: CallbackContext):
     args = context.args
     if len(args) >= 1:
         val = args[0].lower()
-        removed = sql.global_unignore_command(val)
-        if removed:
+        if removed := sql.global_unignore_command(val):
             reply = "<b>{}</b> has been removed from global bluetext cleaner ignore list.".format(
                 args[0])
         else:
@@ -195,7 +182,7 @@ def bluetext_ignore_list(update: Update, context: CallbackContext):
         for x in local_ignore_list:
             text += f" - <code>{x}</code>\n"
 
-    if text == "":
+    if not text:
         text = "No commands are currently ignored from bluetext cleaning."
         message.reply_text(text)
         return

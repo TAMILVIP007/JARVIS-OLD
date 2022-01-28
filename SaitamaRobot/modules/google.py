@@ -95,7 +95,7 @@ async def okgoogle(img):
     """ For .reverse command, Google search images and stickers. """
     if os.path.isfile("okgoogle.png"):
         os.remove("okgoogle.png")
-    
+
     message = await img.get_reply_message()
     if message and message.media:
         photo = io.BytesIO()
@@ -140,10 +140,7 @@ async def okgoogle(img):
             await dev.edit("`Can't find this piece of shit.`")
             return
 
-        if img.pattern_match.group(1):
-            lim = img.pattern_match.group(1)
-        else:
-            lim = 3
+        lim = img.pattern_match.group(1) or 3
         images = await scam(match, lim)
         yeet = []
         for i in images:

@@ -252,13 +252,11 @@ def get_restr(chat_id):
 
 def migrate_chat(old_chat_id, new_chat_id):
     with PERM_LOCK:
-        perms = SESSION.query(Permissions).get(str(old_chat_id))
-        if perms:
+        if perms := SESSION.query(Permissions).get(str(old_chat_id)):
             perms.chat_id = str(new_chat_id)
         SESSION.commit()
 
     with RESTR_LOCK:
-        rest = SESSION.query(Restrictions).get(str(old_chat_id))
-        if rest:
+        if rest := SESSION.query(Restrictions).get(str(old_chat_id)):
             rest.chat_id = str(new_chat_id)
         SESSION.commit()

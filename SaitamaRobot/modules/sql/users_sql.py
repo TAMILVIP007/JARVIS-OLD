@@ -174,8 +174,7 @@ def num_users():
 
 def migrate_chat(old_chat_id, new_chat_id):
     with INSERTION_LOCK:
-        chat = SESSION.query(Chats).get(str(old_chat_id))
-        if chat:
+        if chat := SESSION.query(Chats).get(str(old_chat_id)):
             chat.chat_id = str(new_chat_id)
         SESSION.commit()
 
@@ -191,8 +190,7 @@ ensure_bot_in_db()
 
 def del_user(user_id):
     with INSERTION_LOCK:
-        curr = SESSION.query(Users).get(user_id)
-        if curr:
+        if curr := SESSION.query(Users).get(user_id):
             SESSION.delete(curr)
             SESSION.commit()
             return True
@@ -205,8 +203,7 @@ def del_user(user_id):
 
 def rem_chat(chat_id):
     with INSERTION_LOCK:
-        chat = SESSION.query(Chats).get(str(chat_id))
-        if chat:
+        if chat := SESSION.query(Chats).get(str(chat_id)):
             SESSION.delete(chat)
             SESSION.commit()
         else:

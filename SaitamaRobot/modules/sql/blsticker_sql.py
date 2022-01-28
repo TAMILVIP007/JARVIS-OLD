@@ -63,9 +63,9 @@ def add_to_stickers(chat_id, trigger):
 
 def rm_from_stickers(chat_id, trigger):
     with STICKERS_FILTER_INSERTION_LOCK:
-        stickers_filt = SESSION.query(StickersFilters).get(
-            (str(chat_id), trigger))
-        if stickers_filt:
+        if stickers_filt := SESSION.query(StickersFilters).get(
+            (str(chat_id), trigger)
+        ):
             if trigger in CHAT_STICKERS.get(str(chat_id),
                                             set()):  # sanity check
                 CHAT_STICKERS.get(str(chat_id), set()).remove(trigger)
@@ -135,8 +135,7 @@ def set_blacklist_strength(chat_id, blacklist_type, value):
 
 def get_blacklist_setting(chat_id):
     try:
-        setting = CHAT_BLSTICK_BLACKLISTS.get(str(chat_id))
-        if setting:
+        if setting := CHAT_BLSTICK_BLACKLISTS.get(str(chat_id)):
             return setting['blacklist_type'], setting['value']
         else:
             return 1, "0"
